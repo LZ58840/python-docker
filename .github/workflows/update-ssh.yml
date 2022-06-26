@@ -1,0 +1,43 @@
+name: Update Development Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  init_ssh:
+    name: Initialize Development Project on Server
+    runs-on: ubuntu-latest
+    steps:
+    - name: Execute Remote SSH Commands Using Password
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script_stop: true
+        script: |
+          if [ ! -d "${{ github.event.repository.name }}" ]
+          then
+          {
+            git clone https://github.com/${{ github.repository }}
+          }
+          fi
+  update_ssh:
+    name: Update Development Project on Server
+    needs: "init_ssh"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Execute Remote SSH Commands Using Password
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script_stop: true
+        script: |
+          cd ${{ github.event.repository.name }}
+          make update
